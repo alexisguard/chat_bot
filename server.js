@@ -23,6 +23,9 @@ app.use(express.static(path.join(__dirname, 'public'), {
 app.use(express.json());
 
 const WORKSPACE_ID = 'cm33gys530001u5b3bej29tqe';
+const USER_ID = 'cm33gppy60008p9ku5qo7r5mh';
+const WORKSPACE_USER_ID = 'cm33gppyn000ap9kuii6e3me6';
+const PROJECT_ID = 'cm34imwtm0000zq9t0x8ge8za';
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 app.post('/api/chat', async (req, res) => {
@@ -110,9 +113,9 @@ app.post('/api/start-chat', async (req, res) => {
         const workspace = await prisma.workspace.findUnique({
             where: { id: WORKSPACE_ID },
             include: {
-                projects: { take: 1 },
+                projects: { where: { id: PROJECT_ID } },
                 workspaceUsers: { 
-                    take: 1,
+                    where: { id: WORKSPACE_USER_ID },
                     include: { user: true }
                 }
             }

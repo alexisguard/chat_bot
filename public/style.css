@@ -50,20 +50,21 @@ body.show-chatbot .chatbot-toggler span:last-child {
 
 /* Fenêtre du chatbot */
 .chatbot {
-  position: fixed;
-  right: 35px;
-  bottom: 90px;
-  width: 420px;
-  background: #fff;
-  border-radius: 15px;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.5);
-  transform-origin: bottom right;
-  box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
-              0 32px 64px -48px rgba(0, 0, 0, 0.5);
-  transition: all 0.1s ease;
+	position: fixed;
+	right: 10%;
+	bottom: 10%;
+	width: 80%; /* Augmenter la largeur à 80% */
+	height: 80%; /* Augmenter la hauteur à 80% */
+	background: #fff;
+	border-radius: 15px;
+	overflow: hidden;
+	opacity: 0;
+	pointer-events: none;
+	transform: scale(0.5);
+	transform-origin: bottom right;
+	box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
+				0 32px 64px -48px rgba(0, 0, 0, 0.5);
+	transition: all 0.1s ease;
 }
 
 body.show-chatbot .chatbot {
@@ -71,6 +72,30 @@ body.show-chatbot .chatbot {
   pointer-events: auto;
   transform: scale(1);
 }
+
+/* Responsive Design */
+@media (max-width: 490px) {
+	.chatbot {
+	  right: 0;
+	  bottom: 0;
+	  height: 100%;
+	  border-radius: 0;
+	  width: 100%;
+	}
+  
+	.chatbot .chatbox {
+	  height: 90%;
+	  padding: 25px 15px 100px;
+	}
+  
+	.chatbot .chat-input {
+	  padding: 5px 15px;
+	}
+  
+	.chatbot header span {
+	  display: block;
+	}
+  }
 
 .chatbot header {
   padding: 16px 0;
