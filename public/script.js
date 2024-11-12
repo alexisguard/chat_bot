@@ -55,8 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
             chatbox.appendChild(errorMessage);
         }
     };
-
-    // Gestion des messages
     const handleChat = async () => {
         if (!chatInput) return;
         
@@ -69,32 +67,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Afficher le message utilisateur
         chatbox.appendChild(createChatLi(userMessage, "outgoing"));
-        chatbox.scrollTo(0, chatbox.scrollHeight);
-
+        
+        // Créer l'élément pour la réponse du bot
+        const incomingChatLi = createChatLi("", "incoming");
+        chatbox.appendChild(incomingChatLi);
+        const messageParagraph = incomingChatLi.querySelector("p");
+        
         try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
+            const response = await fetch(`/api/chat/${chatAgentTaskId}?message=${encodeURIComponent(userMessage)}`, {
+                method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: userMessage,
-                    chatAgentTaskId: chatAgentTaskId
-                })
+                    'Accept': 'text/plain'
+                }
             });
 
             if (!response.ok) throw new Error('Erreur de communication');
 
-            const data = await response.json();
-            chatbox.appendChild(createChatLi(data.answer, "incoming"));
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value, { stream: true });
+                if (chunk) {
+                    messageParagraph.textContent += chunk;
+                    chatbox.scrollTo(0, chatbox.scrollHeight);
+                }
+            }
         } catch (error) {
             console.error('Erreur:', error);
-            chatbox.appendChild(createChatLi("Désolé, une erreur s'est produite.", "error"));
+            messageParagraph.textContent = "Désolé, une erreur s'est produite.";
+            incomingChatLi.classList.add("error");
         }
-        
         chatbox.scrollTo(0, chatbox.scrollHeight);
     };
-
     // Toggle du chatbot
     const toggleChatbot = () => {
         document.body.classList.toggle("show-chatbot");

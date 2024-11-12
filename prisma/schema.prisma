@@ -1,0 +1,357 @@
+generator client {
+  provider             = "prisma-client-js"
+  recursive_type_depth = "5"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      String                   @id @default(cuid())
+  email                   String                   @unique
+  name                    String?
+  password                String
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  activeWorkspaceId       String?
+  profileImage            String?
+  hasVerifiedEmail        Boolean                  @default(false)
+  verificationToken       String?                  @unique
+  businessRiskReportTasks BusinessRiskReportTask[]
+  ChatAgentTask           ChatAgentTask[]
+  Document                Document[]
+  Folder                  Folder[]
+  activeWorkspace         Workspace?               @relation(fields: [activeWorkspaceId], references: [id])
+  workspaceUsers          WorkspaceUser[]
+}
+
+model Workspace {
+  id                      String                   @id @default(cuid())
+  name                    String
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  language                String                   @default("fr")
+  businessRiskReportTasks BusinessRiskReportTask[]
+  chatAgentTask           ChatAgentTask[]
+  documents               Document[]
+  documentAnalyserTask    DocumentAnalyserTask[]
+  entities                Entity[]
+  invitations             Invitation[]
+  projects                Project[]
+  users                   User[]
+  workspaceUsers          WorkspaceUser[]
+}
+
+model WorkspaceUser {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole
+  user        User          @relation(fields: [userId], references: [id])
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+}
+
+model Invitation {
+  id          String        @id @default(cuid())
+  email       String
+  workspaceId String
+  role        WorkspaceRole
+  token       String        @unique
+  createdAt   DateTime      @default(now())
+  expiresAt   DateTime
+  accepted    Boolean       @default(false)
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+}
+
+model BusinessRiskReportTask {
+  id                 String                       @id @default(cuid())
+  reportName         String?
+  generalDescription String?
+  natureOfBusiness   String?
+  geography          String?
+  riskOverview       String?
+  nextSteps          String[]
+  inputUrl           String?
+  createdById        String
+  workspaceId        String
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @default(now()) @updatedAt
+  status             BusinessRiskReportTaskStatus @default(DRAFT)
+  mainEntityId       String?
+  displayId          Int                          @default(1)
+  projectId          String?
+  apiResponse        String?
+  errorMessage       String?
+  createdBy          User                         @relation(fields: [createdById], references: [id])
+  mainEntity         Entity?                      @relation("MainEntities", fields: [mainEntityId], references: [id])
+  project            Project?                     @relation(fields: [projectId], references: [id])
+  workspace          Workspace                    @relation(fields: [workspaceId], references: [id])
+  observations       Observation[]
+  references         Reference[]
+  relatedEntities    Entity[]                     @relation("TaskRelatedEntities")
+}
+
+model Entity {
+  id                             String                   @id @default(cuid())
+  name                           String
+  description                    String?
+  createdAt                      DateTime                 @default(now())
+  updatedAt                      DateTime                 @updatedAt
+  type                           EntityType
+  socialLinks                    String[]
+  country                        String?
+  city                           String?
+  state                          String?
+  streetAddress                  String?
+  zipCode                        String?
+  phoneNumber                    String?
+  email                          String?
+  website                        String?
+  workspaceId                    String?
+  industry                       String?
+  role                           String?
+  DocumentAnalyserTaskId         String?
+  documentId                     String?
+  projectId                      String?
+  mainBusinessRiskReportTasks    BusinessRiskReportTask[] @relation("MainEntities")
+  DocumentAnalyserTask           DocumentAnalyserTask?    @relation(fields: [DocumentAnalyserTaskId], references: [id])
+  Document                       Document?                @relation(fields: [documentId], references: [id])
+  project                        Project?                 @relation(fields: [projectId], references: [id])
+  workspace                      Workspace?               @relation(fields: [workspaceId], references: [id])
+  documents                      Document[]               @relation("DocumentEntities")
+  relatedBusinessRiskReportTasks BusinessRiskReportTask[] @relation("TaskRelatedEntities")
+}
+
+model Observation {
+  id                       String                  @id @default(cuid())
+  title                    String
+  description              String
+  riskGrade                Int
+  type                     String?
+  businessRiskReportTaskId String?
+  projectId                String?
+  documentAnalyserTaskId   String?
+  businessRiskReportTask   BusinessRiskReportTask? @relation(fields: [businessRiskReportTaskId], references: [id])
+  documentAnalyserTask     DocumentAnalyserTask?   @relation(fields: [documentAnalyserTaskId], references: [id])
+  project                  Project?                @relation(fields: [projectId], references: [id])
+  references               Reference[]
+}
+
+model Reference {
+  id                       String                  @id @default(cuid())
+  url                      String
+  title                    String?
+  businessRiskReportTaskId String?
+  DocumentAnalyserTaskId   String?
+  projectId                String?
+  observationId            String?
+  DocumentAnalyserTask     DocumentAnalyserTask?   @relation(fields: [DocumentAnalyserTaskId], references: [id])
+  businessRiskReportTask   BusinessRiskReportTask? @relation(fields: [businessRiskReportTaskId], references: [id])
+  observation              Observation?            @relation(fields: [observationId], references: [id])
+  project                  Project?                @relation(fields: [projectId], references: [id])
+}
+
+model Project {
+  id                        String                   @id @default(cuid())
+  name                      String
+  description               String?
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+  workspaceId               String
+  budget                    Int?
+  city                      String?
+  country                   String?
+  endDate                   DateTime?
+  fundingType               String?
+  potentialFraudDescription String?
+  potentialFraudTypes       String[]
+  projectType               String?
+  startDate                 DateTime?
+  status                    ProjectStatus            @default(DRAFT)
+  businessRiskReportTasks   BusinessRiskReportTask[]
+  chatAgent                 ChatAgentTask[]
+  documents                 Document[]
+  documentAnalyserTask      DocumentAnalyserTask[]
+  entities                  Entity[]
+  folders                   Folder[]
+  observations              Observation[]
+  workspace                 Workspace                @relation(fields: [workspaceId], references: [id])
+  references                Reference[]
+}
+
+model Document {
+  id                     String                   @id @default(cuid())
+  filename               String
+  uploadedAt             DateTime                 @default(now())
+  workspaceId            String?
+  author                 String?
+  chatAgentTaskId        String?
+  createdById            String
+  dateOrPeriod           String?
+  description            String?
+  documentAnalyserTaskId String?
+  fileType               String
+  folderId               String?
+  fullText               String?
+  language               String?
+  metadata               String?
+  projectId              String
+  url                    String
+  fileSize               Int?
+  preprocessStatus       DocumentPreprocessStatus @default(DRAFT)
+  apiResponse            String?
+  errorMessage           String?
+  chatAgentTask          ChatAgentTask?           @relation(fields: [chatAgentTaskId], references: [id])
+  createdBy              User                     @relation(fields: [createdById], references: [id])
+  documentAnalyserTask   DocumentAnalyserTask?    @relation(fields: [documentAnalyserTaskId], references: [id])
+  folder                 Folder?                  @relation(fields: [folderId], references: [id])
+  project                Project                  @relation(fields: [projectId], references: [id])
+  workspace              Workspace?               @relation(fields: [workspaceId], references: [id])
+  DocumentPage           DocumentPage[]
+  entity                 Entity[]
+  entities               Entity[]                 @relation("DocumentEntities")
+}
+
+model DocumentPage {
+  id         String   @id @default(cuid())
+  pageNumber Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  documentId String
+  imagePath  String?
+  Document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
+
+model Folder {
+  id             String     @id @default(cuid())
+  name           String
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  parentFolderId String?
+  projectId      String
+  createdById    String
+  documents      Document[]
+  createdBy      User       @relation(fields: [createdById], references: [id])
+  parentFolder   Folder?    @relation("Subfolders", fields: [parentFolderId], references: [id])
+  subfolders     Folder[]   @relation("Subfolders")
+  project        Project    @relation(fields: [projectId], references: [id])
+}
+
+model DocumentAnalyserTask {
+  id                String                     @id @default(cuid())
+  name              String
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  workspaceId       String
+  projectId         String
+  nextSteps         String[]
+  status            DocumentAnalyserTaskStatus @default(DRAFT)
+  outputDescription String?
+  inputContext      String?
+  inputDocuments    Document[]
+  project           Project                    @relation(fields: [projectId], references: [id])
+  workspace         Workspace                  @relation(fields: [workspaceId], references: [id])
+  entities          Entity[]
+  observations      Observation[]
+  references        Reference[]
+}
+
+model ChatAgentTask {
+  id               String     @id @default(cuid())
+  name             String
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  workspaceId      String
+  projectId        String?
+  userId           String
+  project          Project?   @relation(fields: [projectId], references: [id])
+  user             User       @relation(fields: [userId], references: [id])
+  workspace        Workspace  @relation(fields: [workspaceId], references: [id])
+  contextDocuments Document[]
+  messages         Message[]
+}
+
+model Message {
+  id              String          @id @default(cuid())
+  messageSender   MessageSender
+  content         String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  chatAgentTaskId String
+  chatAgentTask   ChatAgentTask   @relation(fields: [chatAgentTaskId], references: [id])
+  messageActions  MessageAction[]
+}
+
+model MessageAction {
+  id                String            @id @default(cuid())
+  title             String
+  messageId         String
+  messageActionType MessageActionType
+  documentId        String
+  message           Message           @relation(fields: [messageId], references: [id])
+}
+
+enum WorkspaceRole {
+  ADMIN
+  MEMBER
+  OWNER
+}
+
+enum BusinessRiskReportTaskStatus {
+  DRAFT
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+enum EntityType {
+  PERSON
+  BUSINESS
+  ORGANIZATION
+}
+
+enum ProjectStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum FileType {
+  PDF
+  DOCX
+  PNG
+  JPG
+  JPEG
+  GIF
+  MP4
+  MP3
+  MSG
+}
+
+enum DocumentAnalyserTaskStatus {
+  DRAFT
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+enum MessageActionType {
+  OPEN_DOCUMENT
+  OPEN_URL
+}
+
+enum MessageSender {
+  USER
+  BOT
+}
+
+enum DocumentPreprocessStatus {
+  DRAFT
+  PREPROCESSING
+  COMPLETED
+  FAILED
+}
