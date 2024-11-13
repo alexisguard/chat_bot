@@ -221,7 +221,6 @@ app.get('/api/chat/:chatAgentTaskId', async (req, res) => {
 		
 		response.data.on('data', chunk => {
 			const decodedChunk = new TextDecoder().decode(chunk);
-			console.log('Chunk reçu:', decodedChunk);
 			
 			if (decodedChunk.trim()) {
 				res.write(decodedChunk);
@@ -244,7 +243,7 @@ app.get('/api/chat/:chatAgentTaskId', async (req, res) => {
                                 chatAgentTaskId
                             }
                         });
-                        console.log('✅ Réponse du bot enregistrée');
+						console.log('✅ Réponse du bot enregistrée:', fullResponse);
                     }
                     resolve();
                 } catch (error) {
