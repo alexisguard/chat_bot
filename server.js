@@ -35,10 +35,10 @@ app.use(cors({
     }
 }));
 
-const WORKSPACE_ID = 'cm37fd130003jekcahrm77lug';
-const USER_ID = 'cm33gppy60008p9ku5qo7r5mh';
-const WORKSPACE_USER_ID = 'cm37fd130003kekcavq9424hy';
-const PROJECT_ID = 'cm37fs66b0043ekcapdjkg7kx';
+const WORKSPACE_ID = 'cm3pw7fp200hrqxspr9fj63n8';
+const USER_ID = 'cm3pw7fok00hqqxspby9frkmw';
+const WORKSPACE_USER_ID = 'cm3pw7fp200hsqxsp0p3uzbye';
+const PROJECT_ID = 'cm3ri8ht60001uosvwoobj6pn';
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 // app.post('/api/chat', async (req, res) => {
@@ -123,41 +123,31 @@ app.post('/api/start-chat', async (req, res) => {
     console.log('\n=== Démarrage d\'une nouvelle session de chat ===');
     
     try {
-        const workspace = await prisma.workspace.findUnique({
-            where: { id: WORKSPACE_ID },
-            include: {
-                projects: { where: { id: PROJECT_ID } },
-                workspaceUsers: { 
-                    where: { id: WORKSPACE_USER_ID },
-                    include: { user: true }
+        // Récupérer le projet avec ses documents de manière explicite
+        const project = await prisma.project.findUnique({
+            where: { 
+                id: PROJECT_ID 
+            },
+            select: {
+                id: true,
+                name: true,
+                documents: {
+                    select: {
+                        id: true,
+                        filename: true,
+                        fileType: true
+                    }
                 }
             }
         });
 
-        if (!workspace) {
-            console.error('❌ Workspace non trouvé:', WORKSPACE_ID);
-            throw new Error('Workspace non trouvé');
-        }
-        console.log('✅ Workspace trouvé:', workspace.name);
-
-        const project = await prisma.project.findUnique({
-            where: { id: PROJECT_ID }
-        });
         if (!project) {
-            console.error('❌ Projet non trouvé dans ce workspace');
-            throw new Error('Projet non trouvé dans ce workspace');
+            console.error('❌ Projet non trouvé:', PROJECT_ID);
+            throw new Error('Projet non trouvé');
         }
-        console.log('✅ Projet sélectionné:', project.name);
 
-        const workspaceUser = await prisma.workspaceUser.findUnique({
-            where: { id: WORKSPACE_USER_ID },
-			include: { user: true }
-        });
-		if (!workspaceUser) {
-            console.error('❌ Utilisateur non trouvé dans ce workspace');
-            throw new Error('Utilisateur non trouvé dans ce workspace');
-        }
-        console.log('✅ Utilisateur sélectionné:', workspaceUser.user.email);
+        console.log('✅ Projet sélectionné:', project.name);
+        console.log('📄 Documents trouvés:', project.documents);
 
         // Créer la tâche de chat
         const chatAgentTask = await prisma.chatAgentTask.create({
@@ -165,19 +155,33 @@ app.post('/api/start-chat', async (req, res) => {
                 id: uuidv4(),
                 name: `Chat Session ${new Date().toISOString()}`,
                 workspaceId: WORKSPACE_ID,
-                projectId: project.id,
-                userId: workspaceUser.user.id,
-                messages: {
-                    create: {
-                        messageSender: 'BOT',
-                        content: 'Bonjour 👋\nComment puis-je vous aider aujourd\'hui?'
-                    }
-                }
+                projectId: PROJECT_ID,
+                userId: USER_ID,
+                // Connecter les documents existants en utilisant leur ID directement
+                contextDocuments: project.documents && project.documents.length > 0 ? {
+                    connect: project.documents.map(doc => ({
+                        id: doc.id  // Utiliser l'ID directement au lieu de documentId
+                    }))
+                } : undefined
             }
         });
 
         console.log('✅ ChatAgentTask créé avec succès:', chatAgentTask.id);
-        res.json({ chatAgentTaskId: chatAgentTask.id });
+        console.log('✅ Documents liés:', project.documents?.length || 0);
+
+        // Créer le message de bienvenue
+        await prisma.message.create({
+            data: {
+                messageSender: 'BOT',
+                content: 'Bonjour 👋\nComment puis-je vous aider aujourd\'hui?',
+                chatAgentTaskId: chatAgentTask.id
+            }
+        });
+
+        res.json({ 
+            chatAgentTaskId: chatAgentTask.id,
+            documentsCount: project.documents?.length || 0
+        });
     } catch (error) {
         console.error('❌ Erreur détaillée:', error);
         res.status(500).json({ 
