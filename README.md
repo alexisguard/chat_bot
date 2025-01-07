@@ -43,9 +43,6 @@ Create a `.env` file in the root directory and add your configuration.
 ### 2. API Setup (Python/FastAPI)
 
 1. Navigate to the alphaguard_api folder:
-```bash
-cd alphaguard_api
-```
 
 2. Install Python dependencies (if needed):
 ```bash
