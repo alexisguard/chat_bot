@@ -31,14 +31,15 @@ This will install the following required packages:
 - prisma
 - uuid
 
-2. Generate Prisma Client:
+2. Set up your environment variables:
+Create a `.env` file in the root directory and add your configuration.
+
+3. Generate Prisma Client:
 ```bash
 npx prisma generate
 ```
 This step is required to generate the Prisma Client based on your schema before running the application.
 
-3. Set up your environment variables:
-Create a `.env` file in the root directory and add your configuration.
 
 ### 2. API Setup (Python/FastAPI)
 
