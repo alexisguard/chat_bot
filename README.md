@@ -42,7 +42,7 @@ Create a `.env` file in the root directory and add your configuration.
 
 ### 2. API Setup (Python/FastAPI)
 
-1. Navigate to the alphaguard_api folder:
+1. Navigate to the alphaguard_api folder in a new terminal window:
 
 2. Install Python dependencies (if needed):
 ```bash
@@ -62,7 +62,7 @@ This will start the API server locally, typically at `http://localhost:8000`
 
 ### 2. Start the Node.js Server
 
-In a new terminal window, from the root directory, run:
+In a the chatbot terminal window, from the root directory, run:
 ```bash
 npm start
 ```
