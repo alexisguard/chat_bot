@@ -55,10 +55,10 @@ npm install
 echo "🔄 Generating Prisma client..."
 npx prisma generate
 
-# Install Python dependencies
-echo "📦 Installing Python dependencies..."
-cd alphaguard_api
-pip3 install fastapi uvicorn
+# # Install Python dependencies
+# echo "📦 Installing Python dependencies..."
+# cd alphaguard_api
+# pip3 install fastapi uvicorn
 
 echo "✅ Installation complete!"
 echo ""
