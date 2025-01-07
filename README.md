@@ -13,7 +13,33 @@ Before running the application, make sure you have the following installed:
 
 ## Installation
 
-### 1. Backend Setup (Node.js)
+### Automatic Installation (macOS)
+
+The easiest way to install all dependencies is to use the provided installation script:
+
+1. Make the script executable:
+```bash
+chmod +x install.sh
+```
+
+2. Run the installation script:
+```bash
+./install.sh
+```
+
+This script will:
+- Install Homebrew if not present
+- Install Node.js if not present
+- Install Python if not present
+- Install all Node.js dependencies
+- Generate the Prisma client
+- Install all Python dependencies
+
+### Manual Installation
+
+If you prefer to install manually or are not using macOS, follow these steps:
+
+#### 1. Backend Setup (Node.js)
 
 1. Install Node.js dependencies:
 ```bash
@@ -31,21 +57,23 @@ This will install the following required packages:
 - prisma
 - uuid
 
-2. Set up your environment variables:
-Create a `.env` file in the root directory and add your configuration.
-
-3. Generate Prisma Client:
+2. Generate Prisma Client:
 ```bash
 npx prisma generate
 ```
 This step is required to generate the Prisma Client based on your schema before running the application.
 
+3. Set up your environment variables:
+Create a `.env` file in the root directory and add your configuration.
 
-### 2. API Setup (Python/FastAPI)
+#### 2. API Setup (Python/FastAPI)
 
-1. Navigate to the alphaguard_api folder in a new terminal window:
+1. Navigate to the alphaguard_api folder:
+```bash
+cd alphaguard_api
+```
 
-2. Install Python dependencies (if needed):
+2. Install Python dependencies:
 ```bash
 pip install fastapi uvicorn
 ```
@@ -63,7 +91,7 @@ This will start the API server locally, typically at `http://localhost:8000`
 
 ### 2. Start the Node.js Server
 
-In a the chatbot terminal window, from the root directory, run:
+In a new terminal window, from the root directory, run:
 ```bash
 npm start
 ```
@@ -76,7 +104,7 @@ Once both servers are running:
 
 1. Open your web browser
 2. Navigate to `http://localhost:3000`
-3. You should see the chatbot interface and be able to interact with it after clicking on the chat icon in the bottom right corner.
+3. You should see the chatbot interface and be able to interact with it
 
 ## Troubleshooting
 
